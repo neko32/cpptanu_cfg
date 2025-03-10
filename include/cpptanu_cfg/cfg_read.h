@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <exception>
+#include <vector>
 #include <optional>
 
 using json = nlohmann::json;
@@ -43,6 +44,11 @@ namespace tanu::cfg {
         std::optional<std::string> dump_flattened_view();
         void load(const std::string& cfg_file_name);
         int get_as_int(const std::string& key);
+        std::string get_as_str(const std::string& key);
+        double get_as_double(const std::string& key);
+        std::vector<int> get_as_int_vec(const std::string& key);
+        std::vector<std::string> get_as_str_vec(const std::string& key);
+        std::vector<double> get_as_double_vec(const std::string& key);
     };
 
     class TanuCfgException:public std::exception {

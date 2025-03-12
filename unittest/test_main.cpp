@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include <cppunit/TestCase.h>
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/TestResult.h>
@@ -6,49 +7,56 @@
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include "../include/myneko/myneko.h"
+#include "cpptanu_cfg/cfg_read.h"
+#include <filesystem>
 
 using namespace std;
-using namespace tanu::sample;
+using namespace tanu::cfg;
 
-class MyTestSuite: public CppUnit::TestFixture {
-    CPPUNIT_TEST_SUITE(MyTestSuite);
-    CPPUNIT_TEST(test_name);
-    CPPUNIT_TEST(test_age);
-    CPPUNIT_TEST(test_name_b64);
+class JSONCfgTestSuite: public CppUnit::TestFixture {
+    CPPUNIT_TEST_SUITE(JSONCfgTestSuite);
+    CPPUNIT_TEST(test_load_and_root_singleval_get_noprefix);
+    CPPUNIT_TEST(test_load_and_obj_singleval_get_noprefix);
     CPPUNIT_TEST_SUITE_END();
-    MyNeko *neko;
+    JSONConfig* json_cfg;
+
 public:
     void setUp() {
-        neko = new MyNeko {5, "nekorin"};
+        auto test_file_dir = filesystem::current_path() / "testdata";
+        setenv("TANULIB_CONF_DIR", test_file_dir.c_str(), 1);
+        json_cfg = new JSONConfig{"cpptanu_cfg_utest", "tanu_cfg"};
     }
+
     void tearDown() {
-        delete neko;
+        delete json_cfg;
     }
 protected:
-    void test_name();
-    void test_age();
-    void test_name_b64();
-
+    void test_load_and_root_singleval_get_noprefix();
+    void test_load_and_obj_singleval_get_noprefix();
 };
 
-void MyTestSuite::test_name() {
-    string expected = "nekorin";
-    string actual = neko->name();
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+void JSONCfgTestSuite::test_load_and_root_singleval_get_noprefix() {
+    json_cfg->load("utest.json");
+    const int id = json_cfg->get_as_int("id");
+    CPPUNIT_ASSERT_EQUAL(32, id);
+    const double version = json_cfg->get_as_double("version");
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.28, version, 0.01);
+    const string name = json_cfg->get_as_str("name");
+    CPPUNIT_ASSERT_EQUAL(string {"tako"}, name);
+    
 }
 
-void MyTestSuite::test_age() {
-    CPPUNIT_ASSERT(5 == neko->age());
+void JSONCfgTestSuite::test_load_and_obj_singleval_get_noprefix() {
+    json_cfg->load("utest.json");
+    const int lang_ver = json_cfg->get_as_int("detail/lang-version");
+    CPPUNIT_ASSERT_EQUAL(10, lang_ver);
+    const double lang_patch = json_cfg->get_as_double("detail/lang-patch");
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2864, lang_patch, 0.000001);
+    const string lang = json_cfg->get_as_str("detail/lang");
+    CPPUNIT_ASSERT_EQUAL(string {"c++"}, lang);
 }
 
-void MyTestSuite::test_name_b64() {
-    string expected = "bmVrb3Jpbg==";
-    string actual = neko->name_as_b64();
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
-}
-
-CPPUNIT_TEST_SUITE_REGISTRATION(MyTestSuite);
+CPPUNIT_TEST_SUITE_REGISTRATION(JSONCfgTestSuite);
 
 int main() {
     CppUnit::TextUi::TestRunner runner;

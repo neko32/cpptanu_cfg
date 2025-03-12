@@ -1,0 +1,18 @@
+{
+  "id": 32,
+  "version": 1.28,
+  "name": "tako",
+  "tags": ["neko", "cat", "pokora"],
+  "detail": {
+    "lang": "c++",
+    "lang-version": 10,
+    "lang-patch": 0.2864,
+    "alias": ["cpp", "c++", "C++"],
+    "appendix": {
+      "special_feature": "VECTOR",
+      "platform": ["LINUX", "WIN"],
+      "platform_ids":[1, 0],
+      "feat_ids":[210.45, 18.10, 395.45]
+    }
+  }
+}

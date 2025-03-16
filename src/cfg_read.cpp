@@ -41,25 +41,34 @@ namespace tanu::cfg {
     }
 
     int JSONConfig::get_as_int(const std::string& key_o) {
-        std::string key = key_o;
-        if(key.front() != '/') key.insert(key.begin(), '/');
         try {
+            if(this->m_loaded_cfg == nullptr || this->m_cfg_flattened_view == nullptr) {
+                throw TanuCfgException("Json config hasn't loaded yet");
+            }
+            std::string key = key_o;
+            if(key.front() != '/') key.insert(key.begin(), '/');
             auto v = this->m_cfg_flattened_view.get()->at(key);
             if(!v.is_number_integer()) {
                 throw TanuCfgException(key + "'s value is not integer");
             }
             return v;
         } catch(const json::exception& json_ex) {
-            throw;
+            throw TanuCfgException(std::format("json::exception -> {}", json_ex.what()));
         } catch(const TanuCfgException& ex) {
-            throw ex;
+            throw;
+        } catch(...) {
+            std::exception_ptr ex_p = std::current_exception();
+            std::rethrow_exception(ex_p);            
         } 
     }
 
     std::string JSONConfig::get_as_str(const std::string& key_o) {
-        std::string key = key_o;
-        if(key.front() != '/') key.insert(key.begin(), '/');
         try {
+            if(this->m_loaded_cfg == nullptr || this->m_cfg_flattened_view == nullptr) {
+                throw TanuCfgException("Json config hasn't loaded yet");
+            }
+            std::string key = key_o;
+            if(key.front() != '/') key.insert(key.begin(), '/');
             auto v = this->m_cfg_flattened_view.get()->at(key);
             if(!v.is_string()) {
                 throw TanuCfgException(key + "'s value is not string");
@@ -77,69 +86,45 @@ namespace tanu::cfg {
 
     double JSONConfig::get_as_double(const std::string& key_o) {
         std::string key = key_o;
-        if(key.front() != '/') key.insert(key.begin(), '/');
         try {
+            if(this->m_loaded_cfg == nullptr || this->m_cfg_flattened_view == nullptr) {
+                throw TanuCfgException("Json config hasn't loaded yet");
+            }
+            if(key.front() != '/') key.insert(key.begin(), '/');
             auto v = this->m_cfg_flattened_view.get()->at(key);
             if(!v.is_number_float()) {
                 throw TanuCfgException(key + "'s value is not double");
             }
             return v;
         } catch(const json::exception& json_ex) { 
-            throw new TanuCfgException("getting int value by " + key + " failed:" + json_ex.what());
+            throw TanuCfgException(std::format("json::exception -> {}", json_ex.what()));
         } catch(const TanuCfgException& e) {
-            throw e;
+            throw;
         } catch(...) {
-            throw new TanuCfgException("getting int value by " + key + " failed");
+            std::exception_ptr ex_p = std::current_exception();
+            std::rethrow_exception(ex_p);            
         }
     }
 
     std::vector<double> JSONConfig::get_as_double_vec(const std::string& key_o) {
-        std::string key = key_o;
-        if(key.front() != '/') key.insert(key.begin(), '/');
-        try {
-            // [TODO]
-            std::vector<double> v;
-            return v;
-
-        } catch(const json::exception& json_ex) { 
-            throw new TanuCfgException("getting int value by " + key + " failed:" + json_ex.what());
-        }  catch(const TanuCfgException& ex) {
-            throw ex;
-        }
-        catch(...) {
-            throw new TanuCfgException("getting int value by " + key + " failed");
-        }
-    }
-
-    std::vector<int> JSONConfig::get_as_int_vec(const std::string& key) {
-        try {
-            // [TODO]
-            std::vector<int> v;
-            return v;
-
-        } catch(const json::exception& json_ex) { 
-            throw new TanuCfgException("getting int value by " + key + " failed:" + json_ex.what());
-        }  catch(const TanuCfgException& ex) {
-            throw ex;
-        }
-        catch(...) {
-            throw new TanuCfgException("getting int value by " + key + " failed");
-        }
-    }
-
-    std::vector<std::string> JSONConfig::get_as_str_vec(const std::string& key_o) {
         std::string key_base = key_o;
         std::string key {};
         int idx = 0;
-        if(key_base.front() != '/') key_base.insert(key_base.begin(), '/');
         try {
-            std::vector<std::string> rez_v;
+
+            if(this->m_loaded_cfg == nullptr || this->m_cfg_flattened_view == nullptr) {
+                throw TanuCfgException("Json config hasn't loaded yet");
+            }
+
+            if(key_base.front() != '/') key_base.insert(key_base.begin(), '/');
+
+            std::vector<double> rez_v;
             while(true) {
                 key = std::format("{}/{}", key_base, idx);
                 if(this->m_cfg_flattened_view.get()->contains(key)) {
                     auto v = this->m_cfg_flattened_view.get()->at(key);
-                    if(!v.is_string()) {
-                        throw TanuCfgException(key + "'s value is not string");
+                    if(!v.is_number_float()) {
+                        throw TanuCfgException(key_base + "'s value is not double");
                     }
                     rez_v.push_back(v);
                     idx++;
@@ -148,12 +133,92 @@ namespace tanu::cfg {
                 }
             }
             if(rez_v.size() == 0) {
-                throw TanuCfgException(key + " not found");
+                throw TanuCfgException(std::format("key \'{}\' not found", key_base));
             }
             return rez_v;
 
         } catch(const json::exception& json_ex) { 
-            throw new TanuCfgException(std::format("getting str value by {} failed:{}", key, json_ex.what()));
+            throw TanuCfgException(std::format("json::exception -> {}", json_ex.what()));
+        }  catch(const TanuCfgException& ex) {
+            throw;
+        } catch(...) {
+            std::exception_ptr ex_p = std::current_exception();
+            std::rethrow_exception(ex_p);
+        }
+    }
+
+    std::vector<int> JSONConfig::get_as_int_vec(const std::string& key_o) {
+        std::string key_base = key_o;
+        std::string key {};
+        int idx = 0;
+        try {
+
+            if(this->m_loaded_cfg == nullptr || this->m_cfg_flattened_view == nullptr) {
+                throw TanuCfgException("Json config hasn't loaded yet");
+            }
+            if(key_base.front() != '/') key_base.insert(key_base.begin(), '/');
+
+            std::vector<int> rez_v;
+            while(true) {
+                key = std::format("{}/{}", key_base, idx);
+                if(this->m_cfg_flattened_view.get()->contains(key)) {
+                    auto v = this->m_cfg_flattened_view.get()->at(key);
+                    if(!v.is_number_integer()) {
+                        throw TanuCfgException(key_base + "'s value is not integer");
+                    }
+                    rez_v.push_back(v);
+                    idx++;
+                } else {
+                    break;
+                }
+            }
+            if(rez_v.size() == 0) {
+                throw TanuCfgException(std::format("key \'{}\' not found", key_base));
+            }
+            return rez_v;
+
+        } catch(const json::exception& json_ex) { 
+            throw TanuCfgException(std::format("json::exception -> {}", json_ex.what()));
+        }  catch(const TanuCfgException& ex) {
+            throw;
+        } catch(...) {
+            std::exception_ptr ex_p = std::current_exception();
+            std::rethrow_exception(ex_p);
+        }
+    }
+
+    std::vector<std::string> JSONConfig::get_as_str_vec(const std::string& key_o) {
+        std::string key_base = key_o;
+        std::string key {};
+        int idx = 0;
+        try {
+
+            if(this->m_loaded_cfg == nullptr || this->m_cfg_flattened_view == nullptr) {
+                throw TanuCfgException("Json config hasn't loaded yet");
+            }
+
+            if(key_base.front() != '/') key_base.insert(key_base.begin(), '/');
+            std::vector<std::string> rez_v;
+            while(true) {
+                key = std::format("{}/{}", key_base, idx);
+                if(this->m_cfg_flattened_view.get()->contains(key)) {
+                    auto v = this->m_cfg_flattened_view.get()->at(key);
+                    if(!v.is_string()) {
+                        throw TanuCfgException(key_base + "'s value is not string");
+                    }
+                    rez_v.push_back(v);
+                    idx++;
+                } else {
+                    break;
+                }
+            }
+            if(rez_v.size() == 0) {
+                throw TanuCfgException(std::format("key \'{}\' not found", key_base));
+            }
+            return rez_v;
+
+        } catch(const json::exception& json_ex) { 
+            throw TanuCfgException(std::format("json::exception -> {}", json_ex.what()));
         } catch(const TanuCfgException& ex) {
             throw;
         } catch(...) {

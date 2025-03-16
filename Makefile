@@ -4,10 +4,10 @@
 #
 
 # define the Cpp compiler to use
-CXX = g++
+CXX = g++-13
 
 # define any compile-time flags
-CXXFLAGS	:= -std=c++2a -Wall -Wextra -g -pthread
+CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify

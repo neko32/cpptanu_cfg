@@ -4,6 +4,8 @@
 #include <fstream>
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
+#include <format>
 
 namespace tanu::cfg {
 
@@ -64,11 +66,13 @@ namespace tanu::cfg {
             }
             return v;
         } catch(const json::exception& json_ex) { 
-            throw;
+            throw TanuCfgException(std::format("json::exception -> {}", json_ex.what()));
         } catch(const TanuCfgException& ex) {
-            std::cerr << ex.what() << std::endl;
             throw;
-        } 
+        } catch(...) {
+            std::exception_ptr ex_p = std::current_exception();
+            std::rethrow_exception(ex_p);            
+        }
     }
 
     double JSONConfig::get_as_double(const std::string& key_o) {
@@ -125,13 +129,13 @@ namespace tanu::cfg {
 
     std::vector<std::string> JSONConfig::get_as_str_vec(const std::string& key_o) {
         std::string key_base = key_o;
-        std::string key;
+        std::string key {};
         int idx = 0;
-        if(key.front() != '/') key.insert(key.begin(), '/');
+        if(key_base.front() != '/') key_base.insert(key_base.begin(), '/');
         try {
             std::vector<std::string> rez_v;
             while(true) {
-                key = key_base + "/" + char(idx + '0');
+                key = std::format("{}/{}", key_base, idx);
                 if(this->m_cfg_flattened_view.get()->contains(key)) {
                     auto v = this->m_cfg_flattened_view.get()->at(key);
                     if(!v.is_string()) {
@@ -149,12 +153,12 @@ namespace tanu::cfg {
             return rez_v;
 
         } catch(const json::exception& json_ex) { 
-            throw new TanuCfgException("getting int value by " + key + " failed:" + json_ex.what());
-        }  catch(const TanuCfgException& ex) {
-            throw ex;
-        }
-        catch(...) {
-            throw new TanuCfgException("getting int value by " + key + " failed");
+            throw new TanuCfgException(std::format("getting str value by {} failed:{}", key, json_ex.what()));
+        } catch(const TanuCfgException& ex) {
+            throw;
+        } catch(...) {
+            std::exception_ptr ex_p = std::current_exception();
+            std::rethrow_exception(ex_p);
         }
     }
 }

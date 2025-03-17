@@ -7,12 +7,15 @@
 CXX = g++-13
 
 # define any compile-time flags
-CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread
+CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread -fPIC -shared
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
 LFLAGS = -lpqxx -lpq -lcpprest -lpthread -lssl -lcrypto -lcppunit
+
+# define tanulib app dir
+TANUAPP_LIB_DIR	:= /opt/tanuapp/lib
 
 # define output directory
 OUTPUT	:= output
@@ -35,13 +38,15 @@ FIXPATH = $(subst /,\,$1)
 RM			:= del /q /f
 MD	:= mkdir
 else
-MAIN	:= main
+MAIN	:= libtanujsoncfg.so
 SOURCEDIRS	:= $(shell find $(SRC) -type d)
 INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
 LIBDIRS		:= $(shell find $(LIB) -type d)
 FIXPATH = $1
 RM = rm -f
 MD	:= mkdir -p
+CP  := cp
+LS	:= ls -al
 endif
 
 # define any directories containing header files other than /usr/include
@@ -93,6 +98,13 @@ clean:
 	$(RM) $(call FIXPATH,$(OBJECTS))
 	$(RM) $(call FIXPATH,$(DEPS))
 	@echo Cleanup complete!
+
+.PHONY: install
+install:
+	$(RM) $(TANUAPP_LIB_DIR)/$(MAIN)
+	$(CP) $(OUTPUTMAIN) $(TANUAPP_LIB_DIR)
+	$(LS) $(TANUAPP_LIB_DIR)/$(MAIN)
+	@echo install complete!
 
 run: all
 	./$(OUTPUTMAIN)

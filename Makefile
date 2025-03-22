@@ -14,8 +14,12 @@ CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread -fPIC -shared
 #   their path using -Lpath, something like:
 LFLAGS = -lpqxx -lpq -lcpprest -lpthread -lssl -lcrypto -lcppunit
 
+# lib/app name
+TANUAPP_NAME := cpptanu_cfg
+
 # define tanulib app dir
 TANUAPP_LIB_DIR	:= /opt/tanuapp/lib
+TANUAPP_HEADER_DIR := /opt/tanuapp/include
 
 # define output directory
 OUTPUT	:= output
@@ -25,6 +29,7 @@ SRC		:= src
 
 # define include directory
 INCLUDE	:= include
+PROJ_INCLUDE := $(shell realpath include)
 
 # define lib directory
 LIB		:= lib
@@ -46,6 +51,7 @@ FIXPATH = $1
 RM = rm -f
 MD	:= mkdir -p
 CP  := cp
+FULLRECCP	:= cp -fR
 LS	:= ls -al
 endif
 
@@ -101,8 +107,12 @@ clean:
 
 .PHONY: install
 install:
+	$(MAKE) all
 	$(RM) $(TANUAPP_LIB_DIR)/$(MAIN)
+	$(RM) $(TANUAPP_HEADER_DIR)/$(TANUAPP_NAME)
+	$(MD) $(TANUAPP_HEADER_DIR)/$(TANUAPP_NAME)
 	$(CP) $(OUTPUTMAIN) $(TANUAPP_LIB_DIR)
+	$(FULLRECCP) $(PROJ_INCLUDE)/* $(TANUAPP_HEADER_DIR)/$(TANUAPP_NAME)
 	$(LS) $(TANUAPP_LIB_DIR)/$(MAIN)
 	@echo install complete!
 

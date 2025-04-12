@@ -15,11 +15,10 @@ CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread -fPIC -shared
 LFLAGS = -lpqxx -lpq -lcpprest -lpthread -lssl -lcrypto -lcppunit
 
 # lib/app name
-TANUAPP_NAME := cpptanu_cfg
+NEKOKAN_PACKAGE_NAME := cpptanu_cfg
 
 # define tanulib app dir
-TANUAPP_LIB_DIR	:= /opt/tanuapp/lib
-TANUAPP_HEADER_DIR := /opt/tanuapp/include
+NEKOKAN_HEADER_DIR := $(NEKOKAN_LIB_DIR)/include
 
 # define output directory
 OUTPUT	:= output
@@ -49,6 +48,7 @@ INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
 LIBDIRS		:= $(shell find $(LIB) -type d)
 FIXPATH = $1
 RM = rm -f
+RMREC = rm -fR
 MD	:= mkdir -p
 CP  := cp
 FULLRECCP	:= cp -fR
@@ -108,12 +108,13 @@ clean:
 .PHONY: install
 install:
 	$(MAKE) all
-	$(RM) $(TANUAPP_LIB_DIR)/$(MAIN)
-	$(RM) $(TANUAPP_HEADER_DIR)/$(TANUAPP_NAME)
-	$(MD) $(TANUAPP_HEADER_DIR)/$(TANUAPP_NAME)
-	$(CP) $(OUTPUTMAIN) $(TANUAPP_LIB_DIR)
-	$(FULLRECCP) $(PROJ_INCLUDE)/* $(TANUAPP_HEADER_DIR)/$(TANUAPP_NAME)
-	$(LS) $(TANUAPP_LIB_DIR)/$(MAIN)
+	$(RMREC) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)
+	$(RMREC) $(NEKOKAN_HEADER_DIR)/$(NEKOKAN_PACKAGE_NAME)
+	$(MD) $(NEKOKAN_HEADER_DIR)/$(NEKOKAN_PACKAGE_NAME)
+	$(MD) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)
+	$(CP) $(OUTPUTMAIN) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)/$(BIN_NAME)
+	$(FULLRECCP) ./include $(NEKOKAN_HEADER_DIR)/$(NEKOKAN_PACKAGE_NAME)
+	$(LS) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)/$(MAIN)
 	@echo install complete!
 
 run: all

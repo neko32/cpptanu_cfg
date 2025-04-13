@@ -7,7 +7,7 @@
 CXX = g++-13
 
 # define any compile-time flags
-CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread -fPIC -shared
+CXXFLAGS := -std=c++20 -Wall -Wextra -g -pthread -shared -fPIC
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
@@ -15,60 +15,66 @@ CXXFLAGS	:= -std=c++20 -Wall -Wextra -g -pthread -fPIC -shared
 LFLAGS = -lpqxx -lpq -lcpprest -lpthread -lssl -lcrypto -lcppunit
 
 # lib/app name
+BIN_TYPE = so
 NEKOKAN_PACKAGE_NAME := cpptanu_cfg
+BIN_NAME := libcpptanu_cfg.so
 
-# define tanulib app dir
+# define nekokan header dir
 NEKOKAN_HEADER_DIR := $(NEKOKAN_LIB_DIR)/include
 
 # define output directory
-OUTPUT	:= output
+OUTPUT := output
 
 # define source directory
-SRC		:= src
+SRC := src
 
 # define include directory
-INCLUDE	:= include
-PROJ_INCLUDE := $(shell realpath include)
+INCLUDE := include $(NEKOKAN_HEADER_DIR) 
 
-# define lib directory
-LIB		:= lib
+LIB	:= lib $(NEKOKAN_LIB_DIR)
 
 ifeq ($(OS),Windows_NT)
-MAIN	:= main.exe
-SOURCEDIRS	:= $(SRC)
-INCLUDEDIRS	:= $(INCLUDE)
-LIBDIRS		:= $(LIB)
+MAIN := $(BIN_NAME).exe
+SOURCEDIRS := $(SRC)
+INCLUDEDIRS := $(INCLUDE)
+LIBDIRS := $(LIB)
 FIXPATH = $(subst /,\,$1)
-RM			:= del /q /f
-MD	:= mkdir
+RM := del /q /f
+MD := mkdir
 else
-MAIN	:= libtanujsoncfg.so
-SOURCEDIRS	:= $(shell find $(SRC) -type d)
-INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
-LIBDIRS		:= $(shell find $(LIB) -type d)
+MAIN := $(BIN_NAME)
+SOURCEDIRS := $(shell find $(SRC) -type d)
+INCLUDEDIRS := $(shell find $(INCLUDE) -type d)
+LIBDIRS := $(shell find $(LIB) -type d)
 FIXPATH = $1
 RM = rm -f
 RMREC = rm -fR
-MD	:= mkdir -p
-CP  := cp
-FULLRECCP	:= cp -fR
-LS	:= ls -al
+MD := mkdir -p
+CP := cp
+FULLRECCP := cp -fR
+LS := ls -al
 endif
 
 # define any directories containing header files other than /usr/include
-INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
+INCLUDES := $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
 
 # define the C libs
-LIBS		:= $(patsubst %,-L%, $(LIBDIRS:%/=%))
+LIBS := $(patsubst %,-L%, $(LIBDIRS:%/=%))
 
 # define the C source files
-SOURCES		:= $(wildcard $(patsubst %,%/*.cpp, $(SOURCEDIRS)))
+SOURCES := $(wildcard $(patsubst %,%/*.cpp, $(SOURCEDIRS)))
 
 # define the C object files
-OBJECTS		:= $(SOURCES:.cpp=.o)
+OBJECTS := $(SOURCES:.cpp=.o)
 
 # define the dependency output files
-DEPS		:= $(OBJECTS:.o=.d)
+DEPS := $(OBJECTS:.o=.d)
+
+ifeq ($(BIN_TYPE),exe)
+INSTALL_PATH := $(NEKOKAN_BIN_DIR)/$(NEKOKAN_PACKAGE_NAME)/$(BIN_NAME)
+else
+INSTALL_PATH := $(NEKOKAN_LIB_DIR)/lib$(BIN_NAME)
+endif
 
 #
 # The following part of the makefile is generic; it can be used to
@@ -76,10 +82,10 @@ DEPS		:= $(OBJECTS:.o=.d)
 # deleting dependencies appended to the file from 'make depend'
 #
 
-OUTPUTMAIN	:= $(call FIXPATH,$(OUTPUT)/$(MAIN))
+OUTPUTMAIN := $(call FIXPATH,$(OUTPUT)/$(MAIN))
 
 all: $(OUTPUT) $(MAIN)
-	@echo Executing 'all' complete!
+	echo Executing 'all' complete!
 
 $(OUTPUT):
 	$(MD) $(OUTPUT)
@@ -113,6 +119,7 @@ install:
 	$(MD) $(NEKOKAN_HEADER_DIR)/$(NEKOKAN_PACKAGE_NAME)
 	$(MD) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)
 	$(CP) $(OUTPUTMAIN) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)/$(BIN_NAME)
+	$(CP) $(OUTPUTMAIN) $(INSTALL_PATH)
 	$(FULLRECCP) ./include $(NEKOKAN_HEADER_DIR)/$(NEKOKAN_PACKAGE_NAME)
 	$(LS) $(NEKOKAN_LIB_DIR)/$(NEKOKAN_PACKAGE_NAME)/$(MAIN)
 	@echo install complete!
@@ -120,3 +127,4 @@ install:
 run: all
 	./$(OUTPUTMAIN)
 	@echo Executing 'run: all' complete!
+

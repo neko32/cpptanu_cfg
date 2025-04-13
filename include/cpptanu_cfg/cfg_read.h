@@ -2,7 +2,7 @@
 #ifndef __CFG_READ_H__
 #define __CFG_READ_H__
 
-#include "nlohmann/json.hpp"
+#include "nlohmann/json/json.hpp"
 #include <string>
 #include <memory>
 #include <cstdlib>
@@ -15,7 +15,7 @@ using json = nlohmann::json;
 
 namespace tanu::cfg {
 
-    static const std::string CONF_DIR_ENV_VAR_NAME {"TANULIB_CONF_DIR"};
+    static const std::string CONF_DIR_ENV_VAR_NAME {"NEKOKAN_CONF_DIR"};
 
     class JSONConfig {
     private:

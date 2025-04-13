@@ -49,7 +49,7 @@ class JSONCfgTestSuite: public CppUnit::TestFixture {
 public:
     void setUp() {
         auto test_file_dir = filesystem::current_path() / "testdata";
-        setenv("TANULIB_CONF_DIR", test_file_dir.c_str(), 1);
+        setenv("NEKOKAN_CONF_DIR", test_file_dir.c_str(), 1);
         json_cfg = new JSONConfig{"cpptanu_cfg_utest", "tanu_cfg"};
     }
 
